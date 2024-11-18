@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Machine Learning Project</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<link rel="stylesheet" href="../static/css/style.css">
+
+</head>
+<body>
+<form action = "/predict_regression" method = "post" enctype="multipart/form-data" >
+	<h1 class="title">Upload CSV for regression problem</h1>
+<div class="frame">
+	<div class="center">
+		<div class="title">
+			<h1>Drop file to upload</h1>
+		</div>
+			<div class="dropzone">
+				<img src="http://100dayscss.com/codepen/upload.svg" class="upload-icon" />
+				<input type="file" class="upload-input" name = "file" accept=".csv" >
+			</div>
+		<button type="submit" class="btn" name="uploadbutton">Upload file</button>
+		
+	</div>
+
+</div>
+
+</form>
+</body>
+</html>
