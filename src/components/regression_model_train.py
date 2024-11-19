@@ -15,6 +15,7 @@ import os
 from sklearn.metrics import mean_squared_error
 from src.utils import save_object
 from dataclasses import dataclass
+from docx import Document 
 
 @dataclass
 class RegModelTrainerConfig:
@@ -23,6 +24,7 @@ class RegModelTrainerConfig:
     X_valid_path: str = os.path.join("artifacts","preprocessed_files","X_valid.csv")
     y_train_path: str = os.path.join("artifacts","preprocessed_files","y_train.csv")
     y_valid_path: str = os.path.join("artifacts","preprocessed_files","y_valid.csv")
+    word_doc_path = os.path.join("artifacts", "data_analysis.docx")
 
 class RegressionModelTrainer:
     def __init__(self):
@@ -70,10 +72,15 @@ class RegressionModelTrainer:
                 logging.info(f"{model.__name__} completed with RMSE: {rmse}")
 
                 logging.info(f"Best model: {best_model} with RMSE: {best_rmse}")
+
                 save_object(
                     file_path=self.model_trainer_config.trained_model_file_path,
                     obj=best_model,
                     )
+                # Writing best model info to Word document
+                doc = Document(self.model_trainer_config.word_doc_path)
+                doc.add_paragraph(f"Best model for provided data is: {best_model.__class__.__name__} with RMSE: {best_rmse}. This model has been downloaded.")
+                doc.save(self.model_trainer_config.word_doc_path)
                 return "Model saved"
 
             except Exception as e:

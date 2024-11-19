@@ -29,6 +29,7 @@ class DataTransformationConfig:
     y_train_path: str = os.path.join("artifacts","preprocessed_files","y_train.csv")
     y_test_path: str = os.path.join("artifacts","preprocessed_files","y_test.csv")
     y_valid_path: str = os.path.join("artifacts","preprocessed_files","y_valid.csv")
+    
 class DataPreprocessor:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
@@ -42,6 +43,8 @@ class DataPreprocessor:
             if 'name' in df.columns:
                 df = df.drop("name", axis=1)
             if 'Id' in df.columns:
+                df=df.drop("Id",axis=1)
+            if 'ID' in df.columns:
                 df=df.drop("ID",axis=1)
                 
             df=df.drop_duplicates()

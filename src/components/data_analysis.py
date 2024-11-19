@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, io
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from src.components import data_preprocessing
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import save_object
-from flask import Flask, send_file
+from docx import Document
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from flask import Flask
 from io import StringIO
-import zipfile
-# Ensure Agg backend is used for matplotlib
 import matplotlib
 matplotlib.use('Agg')
 
@@ -23,12 +23,14 @@ class AnalysisConfig:
     heatmap_file_path = os.path.join("artifacts", "heatmap.jpg")
     descriptive_file_path = os.path.join("artifacts", "descriptive.txt")
     zip_file_path = os.path.join("artifacts", "data_analysis.zip")
+    word_doc_path = os.path.join("artifacts", "data_analysis.docx")
+    X_train_path = os.path.join("artifacts","preprocessed_files","X_train.csv")
 
 class DataAnalysis:
     def __init__(self):
         self.data_transformation_config = data_preprocessing.DataTransformationConfig()
         self.analysis_config = AnalysisConfig()
-        
+
         # Ensure the directory exists for saving files
         if not os.path.exists('artifacts'):
             os.makedirs('artifacts')
@@ -37,20 +39,18 @@ class DataAnalysis:
         self.df_path = os.path.join("artifacts", "input_csv_file.csv")
         self.df = pd.read_csv(self.df_path)
 
-        # Load numerical and categorical columns if the files exist
-        if os.path.exists(self.data_transformation_config.numerical_cols_path):
-            logging.info("Loading numerical columns from CSV")
-            self.numerical_df = pd.read_csv(self.data_transformation_config.numerical_cols_path)
-        else:
-            logging.info("No numerical columns file found; setting numerical_df to None")
-            self.numerical_df = pd.DataFrame()  # Use an empty DataFrame
 
-        if os.path.exists(self.data_transformation_config.categorical_cols_path):
-            logging.info("Loading categorical columns from CSV")
-            self.categorical_df = pd.read_csv(self.data_transformation_config.categorical_cols_path)
-        else:
-            logging.info("No categorical columns file found; setting categorical_df to None")
-            self.categorical_df = pd.DataFrame()  # Use an empty DataFrame
+        # Load numerical and categorical columns
+        self.numerical_df = (
+            pd.read_csv(self.data_transformation_config.numerical_cols_path)
+            if os.path.exists(self.data_transformation_config.numerical_cols_path)
+            else pd.DataFrame()
+        )
+        self.categorical_df = (
+            pd.read_csv(self.data_transformation_config.categorical_cols_path)
+            if os.path.exists(self.data_transformation_config.categorical_cols_path)
+            else pd.DataFrame()
+        )
 
     def create_numerical_plots(self):
         try:
@@ -71,7 +71,8 @@ class DataAnalysis:
 
             logging.info("Creating heatmap")
             plt.figure(figsize=(10, 8))
-            sns.heatmap(self.numerical_df.corr(), annot=True, cmap='coolwarm')
+            data=pd.read_csv(self.analysis_config.X_train_path)
+            sns.heatmap(data.corr(), annot=True, cmap='coolwarm')
             plt.title("Correlation Heatmap")
             plt.savefig(self.analysis_config.heatmap_file_path)
             plt.close()
@@ -126,32 +127,76 @@ class DataAnalysis:
             logging.error(f"Error during analysis: {e}")
             raise CustomException(e, sys)
 
-    def create_zip_file(self):
+    def create_word_document(self):
         try:
-            logging.info("Creating zip file of all analysis results")
+            logging.info("Creating Word document")
+            doc = Document()
+            doc.add_heading("Data Analysis Report", level=1)
 
-            # Create a Zip file
-            with zipfile.ZipFile(self.analysis_config.zip_file_path, 'w') as zipf:
-                zipf.write(self.analysis_config.numerical_analysis_file_path, os.path.basename(self.analysis_config.numerical_analysis_file_path))
-                zipf.write(self.analysis_config.categorical_analysis_file_path, os.path.basename(self.analysis_config.categorical_analysis_file_path))
-                zipf.write(self.analysis_config.heatmap_file_path, os.path.basename(self.analysis_config.heatmap_file_path))
-                zipf.write(self.analysis_config.descriptive_file_path, os.path.basename(self.analysis_config.descriptive_file_path))
+            # Add Numerical Analysis
+            doc.add_heading("Numerical Analysis", level=2)
+            doc.add_picture(self.analysis_config.numerical_analysis_file_path, width=Inches(6))
+            doc.add_paragraph("The above plot shows the distribution of numerical features.")
 
-            logging.info(f"Zip file created: {self.analysis_config.zip_file_path}")
+            # Add Heatmap
+            doc.add_heading("Correlation Heatmap", level=2)
+            doc.add_picture(self.analysis_config.heatmap_file_path, width=Inches(6))
+            doc.add_paragraph("The above heatmap shows the correlation between  features.")
+
+            # Add Categorical Analysis
+            doc.add_heading("Categorical Analysis", level=2)
+            doc.add_picture(self.analysis_config.categorical_analysis_file_path, width=Inches(6))
+            doc.add_paragraph("The above plot shows the distribution of categorical features.")
+
+            # Add Descriptive Analysis
+            doc.add_heading("Descriptive Analysis", level=2)
+            desc = self.df.describe()
+
+            # Add descriptive statistics as a table
+            table = doc.add_table(rows=1, cols=len(desc.columns) + 1)
+            table.style = 'Table Grid'
+
+            # Add column headers
+            headers = ['Stat'] + list(desc.columns)
+            hdr_cells = table.rows[0].cells
+            for idx, header in enumerate(headers):
+                hdr_cells[idx].text = str(header)
+
+            # Add rows of statistics
+            for index, row in desc.iterrows():
+                row_cells = table.add_row().cells
+                row_cells[0].text = str(index)  # Add row name (e.g., count, mean, etc.)
+                for idx, value in enumerate(row):
+                    row_cells[idx + 1].text = f"{value:.3f}"  # Add value (formatted to 3 decimals)
+
+            doc.add_paragraph("The above table shows the descriptive statistics for numerical features.")
+
+            # Redirect stdout to capture df.info() output
+            buffer = io.StringIO()
+            sys.stdout = buffer
+            self.df.info()  # Capture the output of df.info() into the buffer
+            sys.stdout = sys.__stdout__  # Reset stdout
+
+            # Get the captured info and add it to the document
+            info_str = buffer.getvalue()
+            doc.add_paragraph("The following information summarizes the DataFrame:")
+            doc.add_paragraph(info_str)
+
+            # Save the document
+            doc.save(self.analysis_config.word_doc_path)
+            logging.info(f"Word document saved: {self.analysis_config.word_doc_path}")
+
         except Exception as e:
-            logging.error(f"Error during zip file creation: {e}")
+            logging.error(f"Error during Word document creation: {e}")
             raise CustomException(e, sys)
-     
-    
+
     def analyze_post(self):
         try:
             self.create_numerical_plots()
             self.create_categorical_plots()
             self.descriptive_analysis()
-            self.profilling()
-            self.create_zip_file()  # Create a zip file containing all analysis results
+            self.create_word_document()
             logging.info("Data analysis is completed.")
         except Exception as e:
             logging.error(f"Error during analysis: {e}")
             raise CustomException(e, sys)
-

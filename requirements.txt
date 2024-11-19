@@ -11,6 +11,7 @@ database-connect
 aiofiles
 dill
 dnspython
+python-dotenv
 evidently
 httptools
 urllib3
@@ -44,4 +45,6 @@ pillow==8
 pandas==2.0.3
 pyparsing==2.3.1
 patsy==0.5.4
+python-docx
+google-cloud-storage
 -e .
