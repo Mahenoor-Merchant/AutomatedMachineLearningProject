@@ -2,6 +2,7 @@ import os, sys
 import pandas as pd
 from dataclasses import dataclass
 from sklearn.impute import SimpleImputer
+from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
@@ -38,14 +39,10 @@ class DataPreprocessor:
         try:
             logging.info("separating X and y_data")
             df = pd.read_csv(self.data_transformation_config.input_csv_file_path)
-            if 'id' in df.columns:
-                df = df.drop("id", axis=1)
-            if 'name' in df.columns:
-                df = df.drop("name", axis=1)
-            if 'Id' in df.columns:
-                df=df.drop("Id",axis=1)
-            if 'ID' in df.columns:
-                df=df.drop("ID",axis=1)
+             # Dropping unnecessary columns
+            unnecessary_cols = ["id", "name", "Id", "ID"]
+            df = df.drop(columns=[col for col in unnecessary_cols if col in df.columns], errors="ignore")
+            df = df.drop_duplicates()
                 
             df=df.drop_duplicates()
 
@@ -124,10 +121,24 @@ class DataPreprocessor:
             return column_transformer
         except Exception as e:
             raise CustomException(e, sys)
+        
+    def apply_pca(self, transformed_data):
+        try:
+            logging.info("Checking for PCA application")
+            if transformed_data.shape[1] > 25:  # Apply PCA if feature count exceeds 25
+                logging.info("Applying PCA to reduce features to 20")
+                pca = PCA(n_components=20)
+                reduced_data = pca.fit_transform(transformed_data)
+                logging.info(f"PCA applied. Reduced data shape: {reduced_data.shape}")
+                return reduced_data
+            else:
+                logging.info("PCA not required")
+                return transformed_data
+        except Exception as e:
+            raise CustomException(e, sys)
 
     def transformer(self):
         try:
-            """self.NumCat()"""
             logging.info("Transforming data")
             # Prepare column transformer
             column_transformer = self.column_transforming()
@@ -135,6 +146,7 @@ class DataPreprocessor:
             y_data = pd.read_csv(self.data_transformation_config.y_data_file_path).squeeze()  # Convert to Series
 
             transformed_data = column_transformer.fit_transform(X_data)
+            transformed_data = self.apply_pca(transformed_data)
            
             # Target feature transformation if categorical
             if y_data.dtype == 'object' or y_data.dtype.name == 'category':

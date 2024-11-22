@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Welcome to my application"
+    return render_template("index.html")
 
 @app.route("/predict_classification", methods=['POST', 'GET'])
 def upload_classification():

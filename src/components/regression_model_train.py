@@ -45,7 +45,7 @@ class RegressionModelTrainer:
             DecisionTreeRegressor,
             RandomForestRegressor,
             GradientBoostingRegressor,
-            AdaBoostRegressor,  
+            AdaBoostRegressor,
             XGBRegressor,
             KNeighborsRegressor,
             BayesianRidge
@@ -54,37 +54,42 @@ class RegressionModelTrainer:
         logging.info("Trying different models")
         model_rmse = {}
         best_model = None
-        best_rmse = float('inf') 
+        best_rmse = float('inf')  # Initialize with a high value for comparison
 
         for model in regression_models:
             try:
-                regressor = model() 
-                regressor.fit(self.X_train, self.y_train)
-                y_pred_valid = regressor.predict(self.X_valid)
-                rmse = sqrt(mean_squared_error(self.y_valid, y_pred_valid))
-                model_rmse[model.__name__] = rmse  
-                
-                # Check if this model has the lowest RMSE so far
-                if rmse < best_rmse:
-                    best_rmse = rmse
-                    best_model = regressor  
-                
+                regressor = model()  # Instantiate the regression model
+                regressor.fit(self.X_train, self.y_train)  # Train the model
+                y_pred_valid = regressor.predict(self.X_valid)  # Predict on validation data
+                rmse = sqrt(mean_squared_error(self.y_valid, y_pred_valid))  # Calculate RMSE
+                model_rmse[model.__name__] = rmse  # Store RMSE for the model
+
                 logging.info(f"{model.__name__} completed with RMSE: {rmse}")
 
-                logging.info(f"Best model: {best_model} with RMSE: {best_rmse}")
-
-                save_object(
-                    file_path=self.model_trainer_config.trained_model_file_path,
-                    obj=best_model,
-                    )
-                # Writing best model info to Word document
-                doc = Document(self.model_trainer_config.word_doc_path)
-                doc.add_paragraph(f"Best model for provided data is: {best_model.__class__.__name__} with RMSE: {best_rmse}. This model has been downloaded.")
-                doc.save(self.model_trainer_config.word_doc_path)
-                return "Model saved"
+                # Update the best model if current model has a lower RMSE
+                if rmse < best_rmse:
+                    best_rmse = rmse
+                    best_model = regressor
 
             except Exception as e:
-                logging.error(f"Error training {model.__name__}: {e}")
-                raise CustomException(e, sys)
-        
-        
+                logging.error(f"Error training {model.__name__}: {e}")  
+                continue  # Skip to the next model if an error occurs
+
+        if best_model:
+            logging.info(f"Best model: {best_model.__class__.__name__} with RMSE: {best_rmse}")
+            
+            # Save the best model
+            save_object(
+                file_path=self.model_trainer_config.trained_model_file_path,
+                obj=best_model,
+            )
+
+            # Write best model info to Word document
+            doc = Document(self.model_trainer_config.word_doc_path)
+            doc.add_paragraph(f"Best model for provided data is: {best_model.__class__.__name__} with RMSE: {best_rmse}. This model has been downloaded.")
+            doc.save(self.model_trainer_config.word_doc_path)
+
+            return "Model saved"
+        else:
+            logging.error("No valid models were successfully trained.")
+            raise CustomException("All models failed to train.", sys)

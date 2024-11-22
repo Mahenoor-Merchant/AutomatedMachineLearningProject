@@ -65,24 +65,32 @@ class ClassificationModelTrainer:
                 y_pred_valid = classifier.predict(self.X_valid)
                 accuracy = accuracy_score(self.y_valid, y_pred_valid)
                 model_accuracy[model.__name__] = accuracy  # Store model name and accuracy
-                
+
+                logging.info(f"{model.__name__} : {accuracy}")
                 # Check if this model has the highest accuracy so far
                 if accuracy > best_accuracy:
                     best_accuracy = accuracy
                     best_model = classifier  # Save the best model object
 
-                logging.info("Best Model saved! with accuracy: {best_accuracy}")
-                save_object(
-                    file_path=self.model_trainer_config.trained_model_file_path,
-                    obj=best_model,
-                )
-                
-                 # Writing best model info to Word document
-                doc = Document(self.model_trainer_config.word_doc_path)
-                doc.add_paragraph(f"Best model for provided data is: {best_model.__class__.__name__} with accuray: {best_accuracy}. This model has been downloaded.")
-                doc.save(self.model_trainer_config.word_doc_path)
-                return "Model saved"
+                logging.info(f"{model.__name__} completed with accuracy: {accuracy}")
 
             except Exception as e:
                 logging.error(f"Error training {model.__name__}: {e}")
-                raise CustomException(e,sys)
+                continue  # Move to the next model if there's an error
+
+        if best_model:
+            logging.info(f"Best model: {best_model} with accuracy: {best_accuracy}")
+            save_object(
+                file_path=self.model_trainer_config.trained_model_file_path,
+                obj=best_model,
+            )
+
+            # Writing best model info to Word document
+            doc = Document(self.model_trainer_config.word_doc_path)
+            doc.add_paragraph(f"Best model for provided data is: {best_model.__class__.__name__} with accuracy: {best_accuracy}. This model has been downloaded.")
+            doc.save(self.model_trainer_config.word_doc_path)
+
+            return "Model saved"
+        else:
+            logging.error("No valid models were successfully trained.")
+            raise CustomException("All models failed to train.", sys)
