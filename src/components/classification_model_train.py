@@ -46,7 +46,6 @@ class ClassificationModelTrainer:
             AdaBoostClassifier,
             KNeighborsClassifier,
             XGBClassifier,
-            LGBMClassifier,
             CatBoostClassifier,
             GaussianNB,
             MultinomialNB,
