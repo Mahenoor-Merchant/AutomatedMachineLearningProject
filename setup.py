@@ -14,7 +14,6 @@ def get_requirements(file_path:str):
 
         return requirements
 
-
 setup(
     name='AutoMl',
     version='0.0.1',

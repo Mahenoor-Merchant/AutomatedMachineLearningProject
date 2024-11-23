@@ -29,7 +29,6 @@ This is a **Flask-based web application** that automates machine learning workfl
 - **Results Download**: Provides prediction results and data analysis in downloadable ZIP files.
 
 ---
-
 ## Requirements
 
 Ensure the following are installed and configured on your system:
