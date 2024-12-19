@@ -100,7 +100,7 @@ class DataAnalysis:
             logging.info("Saving categorical plot")
             plt.savefig(self.analysis_config.categorical_analysis_file_path)
             plt.close()
-
+            logging.info("plots successfully created ")
         except Exception as e:
             raise CustomException(e, sys)
 

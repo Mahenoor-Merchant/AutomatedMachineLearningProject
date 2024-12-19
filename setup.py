@@ -15,7 +15,7 @@ def get_requirements(file_path:str):
         return requirements
 
 setup(
-    name='AutoMl',
+    name='AutomatedMl',
     version='0.0.1',
     author='Mahenoor Merchant',
     author_email='merchant0710@gmail.com',

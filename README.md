@@ -31,8 +31,6 @@ This is a **Flask-based web application** that automates machine learning workfl
 ---
 ## Requirements
 
-Ensure the following are installed and configured on your system:
-
 - **Python 3.9.20**
 - **Flask** (for the web framework)
 - **AWS SDK (Boto3)** for interacting with AWS services

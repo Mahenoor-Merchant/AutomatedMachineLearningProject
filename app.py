@@ -20,22 +20,22 @@ def home():
 def upload_classification():
     try:
         if request.method == "POST":
-            # Step 1: Data ingestion and preprocessing
+            
             data_ingestion.DataIngestion.initiate_data_ingestion(request)
             data_preprocessing.DataPreprocessor().transformer()
 
-            # Step 2: Training pipeline
+            
             logging.info("Executing the training pipeline for Classification Problem")
             train_pipeline = ClfTrainPipeline()
             train_pipeline.classification_training_pipeline()
             logging.info("Training Completed!")
 
-            # Step 3: Prediction pipeline
+            
             predict_pipeline = prediction_pipeline.ModelPrediction()
             prediction_file_detail = predict_pipeline.prediction()
             logging.info("Prediction Completed")
 
-            # Step 4: Word document for analysis
+            
             word_doc_path = os.path.join("artifacts", "data_analysis.docx")
             if not os.path.exists(word_doc_path):
                 logging.error("Analysis Word document not found.")

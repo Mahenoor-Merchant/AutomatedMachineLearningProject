@@ -13,6 +13,8 @@ class DataIngestion:
             pred_file_input_dir = "artifacts"
             if not os.path.exists(pred_file_input_dir):
                 os.makedirs(pred_file_input_dir)
+            
+            logging.info("Accessing files")
 
             # Access the uploaded file
             input_csv_file = request.files["file"]

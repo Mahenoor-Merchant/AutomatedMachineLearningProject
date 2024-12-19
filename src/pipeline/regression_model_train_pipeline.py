@@ -20,7 +20,7 @@ class RegTrainPipeline:
             logging.info("Creating Plots")
             self.data_analyzer.analyze_post()
 
-            logging.info("Training and Selecting Best Model")
+            logging.info("Training and selecting the Best Model")
             
             self.model_trainer.BestModelSelector()
             return "Training pipeline completed"

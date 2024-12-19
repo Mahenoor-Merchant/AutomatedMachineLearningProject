@@ -21,7 +21,7 @@ class DeployModel:
 
     def deploy_on_aws(self):
         try:
-            logging.info("Deploying model on AWS S3")
+            
             # Use AWS credentials from environment variables
             s3 = boto3.client('s3', aws_access_key_id=self.aws_access_key, aws_secret_access_key=self.aws_secret_key)
             

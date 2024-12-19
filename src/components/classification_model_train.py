@@ -52,6 +52,8 @@ class ClassificationModelTrainer:
             BernoulliNB
         ]
 
+        logging.info("Model accuracy check started")
+
         model_accuracy = {}
         best_model = None
         best_accuracy = 0

@@ -40,6 +40,7 @@ class ModelPrediction:
             # Save the result to CSV
             result.to_csv(self.config.result_path, index=False)
 
+            logging.info("Prediction completed")
             return self.config
 
         except Exception as e:

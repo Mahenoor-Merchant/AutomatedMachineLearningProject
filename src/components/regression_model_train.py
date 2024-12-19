@@ -83,7 +83,7 @@ class RegressionModelTrainer:
                 file_path=self.model_trainer_config.trained_model_file_path,
                 obj=best_model,
             )
-
+            logging.info("Writing in docs")
             # Write best model info to Word document
             doc = Document(self.model_trainer_config.word_doc_path)
             doc.add_paragraph(f"Best model for provided data is: {best_model.__class__.__name__} with RMSE: {best_rmse}. This model has been downloaded.")

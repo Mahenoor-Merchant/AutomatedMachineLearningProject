@@ -2,7 +2,6 @@ import logging
 import os
 from datetime import datetime
 
-# Create a named logger for this module
 logger = logging.getLogger(__name__)
 
 # Set up logging configuration

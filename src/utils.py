@@ -40,7 +40,14 @@ def download_model(bucket_name, bucket_file_name, dest_file_name):
 class MainUtils:
     def __init__(self) -> None:
         pass
+    def load_object(file_path):
+        try:
+            with open(file_path, "rb") as file_obj:
+                return dill.load(file_obj)
 
+        except Exception as e:
+            raise CustomException(e, sys)
+"""
     def read_yaml_file(self, filename: str) -> dict:
         try:
             with open(filename, "rb") as yaml_file:
@@ -56,13 +63,7 @@ class MainUtils:
             return schema_config
 
         except Exception as e:
-            raise CustomException(e, sys) from e
+            raise CustomException(e, sys) from e"""
         
-    def load_object(file_path):
-        try:
-            with open(file_path, "rb") as file_obj:
-                return dill.load(file_obj)
-
-        except Exception as e:
-            raise CustomException(e, sys)
+    
 

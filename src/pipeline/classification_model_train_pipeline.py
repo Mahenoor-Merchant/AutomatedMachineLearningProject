@@ -20,7 +20,7 @@ class ClfTrainPipeline:
 
             logging.info("Training and Selecting Best Model")
             self.model_trainer.BestModelSelector()
-            
+            logging.info("Completed Training")
             return "TRAINING PIPELINE COMPLETED"
         
         except Exception as e:

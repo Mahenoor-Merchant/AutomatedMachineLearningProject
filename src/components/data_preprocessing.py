@@ -148,7 +148,7 @@ class DataPreprocessor:
             transformed_data = column_transformer.fit_transform(X_data)
             transformed_data = self.apply_pca(transformed_data)
            
-            # Target feature transformation if categorical
+            logging.info("Transforming the Categorical features")
             if y_data.dtype == 'object' or y_data.dtype.name == 'category':
                 label_encoder = LabelEncoder()
                 transformed_target = label_encoder.fit_transform(y_data)
