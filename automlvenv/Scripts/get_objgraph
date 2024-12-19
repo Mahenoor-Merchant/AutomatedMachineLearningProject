@@ -1,4 +1,0 @@
-#!C:\Users\jiten\OneDrive\Desktop\DataScience\AutoML\automlvenv\python.exe
-# EASY-INSTALL-SCRIPT: 'dill==0.3.9','get_objgraph'
-__requires__ = 'dill==0.3.9'
-__import__('pkg_resources').run_script('dill==0.3.9', 'get_objgraph')

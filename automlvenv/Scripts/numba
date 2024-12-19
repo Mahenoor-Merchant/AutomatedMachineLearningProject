@@ -1,4 +1,0 @@
-#!C:\Users\jiten\OneDrive\Desktop\DataScience\AutoML\automlvenv\python.exe
-# EASY-INSTALL-SCRIPT: 'numba==0.60.0','numba'
-__requires__ = 'numba==0.60.0'
-__import__('pkg_resources').run_script('numba==0.60.0', 'numba')
